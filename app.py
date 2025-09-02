@@ -101,9 +101,6 @@ def admin_login():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    if not session.get('logged_in'):
-        return redirect(url_for('home'))
-
     data = load_data()
     
     if request.method == 'POST':
@@ -113,10 +110,18 @@ def admin_panel():
             for key, value in request.form.items():
                 if key.startswith('prob_'):
                     prize_name = key.replace('prob_', '')
-                    new_probabilities[prize_name] = float(value)
+                    # If the value is not an empty string, convert it to a float
+                    if value:
+                        new_probabilities[prize_name] = float(value)
+                    else:
+                        new_probabilities[prize_name] = 0.0
                 elif key.startswith('limit_'):
                     prize_name = key.replace('limit_', '')
-                    new_prize_limits[prize_name] = int(value)
+                    # If the value is not an empty string, convert it to an int
+                    if value:
+                        new_prize_limits[prize_name] = int(value)
+                    else:
+                        new_prize_limits[prize_name] = 0
             
             data['winProbability'] = new_probabilities
             data['prizeLimits'] = new_prize_limits
