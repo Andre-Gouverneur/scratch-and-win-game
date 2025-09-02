@@ -2,13 +2,17 @@ import os
 import json
 import random
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, send_file, session
 from flask_cors import CORS
+import io
+import csv
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
+app.secret_key = 'your_secret_key_here'  # Change this to a random, secure value
 
 DATA_FILE = 'prizes.json'
+ADMIN_PASSWORD = 'supersecretpassword' # For demonstration, use a strong password
 
 def load_data():
     if not os.path.exists(DATA_FILE):
@@ -86,8 +90,20 @@ def get_prize():
     
     return jsonify({"results": results, "prize": selected_prize})
 
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    password = request.form.get('password')
+    if password == ADMIN_PASSWORD:
+        session['logged_in'] = True
+        return redirect(url_for('admin_panel'))
+    else:
+        return "Invalid password. <a href='/'>Go back</a>"
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
+    if not session.get('logged_in'):
+        return redirect(url_for('home'))
+
     data = load_data()
     
     if request.method == 'POST':
@@ -120,6 +136,28 @@ def admin_panel():
                            winner_log=data.get('winnerLog', []),
                            total_probability=total_probability,
                            message=message)
+
+@app.route('/admin/export-winners')
+def export_winners():
+    data = load_data()
+    winners = data.get('winnerLog', [])
+    
+    csv_data = io.StringIO()
+    csv_writer = csv.writer(csv_data)
+    
+    headers = ["Name", "Email", "Prize", "Timestamp"]
+    csv_writer.writerow(headers)
+    
+    for winner in winners:
+        csv_writer.writerow([winner['name'], winner['email'], winner['prize'], winner['timestamp']])
+    
+    output = io.BytesIO(csv_data.getvalue().encode('utf-8'))
+    output.seek(0)
+    
+    return send_file(output, 
+                     mimetype='text/csv',
+                     as_attachment=True,
+                     download_name='winner_log.csv')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

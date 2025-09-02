@@ -14,6 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # This step is the most critical for getting the files in the right place
 COPY . /app
 
+# Set read/write permissions for the prizes.json file
+RUN chmod 666 prizes.json
+
 # Expose port 5000, as our app runs on it
 EXPOSE 5000
 

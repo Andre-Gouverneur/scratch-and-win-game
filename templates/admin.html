@@ -104,9 +104,7 @@
             </table>
             <button type="submit">Update Prizes</button>
         </form>
-        
         <hr>
-
         <h3>Winner Log</h3>
         <table>
             <thead>
@@ -128,6 +126,12 @@
                 {% endfor %}
             </tbody>
         </table>
+        <a href="/admin/export-winners" download="winner_log.csv" style="text-decoration: none;">
+            <button style="margin-bottom: 20px;">Export to CSV</button>
+            <a href="/" style="text-decoration: none;">
+                <button style="margin-bottom: 20px;">Return to Main Page</button>
+            </a>
+        </a>
     </div>
 </body>
 </html>
