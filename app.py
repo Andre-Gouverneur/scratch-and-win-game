@@ -1,0 +1,125 @@
+import os
+import json
+import random
+from datetime import datetime
+from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask_cors import CORS
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+CORS(app)
+
+DATA_FILE = 'prizes.json'
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {
+            "winProbability": {
+                "COFFEE_MUG": 0.5,
+                "NO_PRIZE": 0.5
+            },
+            "prizeLimits": {
+                "COFFEE_MUG": 100
+            },
+            "prizesGiven": {},
+            "winnerLog": []
+        }
+    with open(DATA_FILE, 'r') as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/get-prize', methods=['POST'])
+def get_prize():
+    data = load_data()
+    probabilities = data.get('winProbability', {})
+    prize_limits = data.get('prizeLimits', {})
+    prizes_given = data.get('prizesGiven', {})
+    winner_log = data.get('winnerLog', [])
+
+    user_data = request.json
+    name = user_data.get('name')
+    email = user_data.get('email')
+
+    prizes_available = {prize: (limit - prizes_given.get(prize, 0)) for prize, limit in prize_limits.items() if prize != 'NO_PRIZE'}
+    
+    available_probabilities = {p: prob for p, prob in probabilities.items() if prizes_available.get(p, 0) > 0}
+    
+    total_prob = sum(available_probabilities.values())
+    no_prize_prob = max(0, 1.0 - total_prob)
+    
+    prize_options = list(available_probabilities.keys())
+    prize_weights = list(available_probabilities.values())
+    
+    if no_prize_prob > 0:
+        prize_options.append("NO_PRIZE")
+        prize_weights.append(no_prize_prob)
+    
+    if not prize_options:
+        selected_prize = "NO_PRIZE"
+    else:
+        selected_prize = random.choices(prize_options, weights=prize_weights, k=1)[0]
+        
+    results = ["LOSER"] * 6
+    winning_symbol = None
+    
+    if selected_prize != "NO_PRIZE":
+        winning_symbol = selected_prize
+        winning_positions = random.sample(range(6), 3)
+        for pos in winning_positions:
+            results[pos] = winning_symbol
+
+        prizes_given[winning_symbol] = prizes_given.get(winning_symbol, 0) + 1
+        winner_entry = {
+            "name": name,
+            "email": email,
+            "prize": winning_symbol,
+            "timestamp": datetime.now().isoformat()
+        }
+        winner_log.append(winner_entry)
+        save_data(data)
+    
+    return jsonify({"results": results, "prize": selected_prize})
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_panel():
+    data = load_data()
+    
+    if request.method == 'POST':
+        try:
+            new_probabilities = {}
+            new_prize_limits = {}
+            for key, value in request.form.items():
+                if key.startswith('prob_'):
+                    prize_name = key.replace('prob_', '')
+                    new_probabilities[prize_name] = float(value)
+                elif key.startswith('limit_'):
+                    prize_name = key.replace('limit_', '')
+                    new_prize_limits[prize_name] = int(value)
+            
+            data['winProbability'] = new_probabilities
+            data['prizeLimits'] = new_prize_limits
+            save_data(data)
+            message = "Configuration updated successfully!"
+        except ValueError:
+            message = "Error: Invalid input. Please enter numbers only."
+    else:
+        message = None
+        
+    total_probability = sum(data['winProbability'].values())
+    
+    return render_template('admin.html', 
+                           prizes=data['winProbability'], 
+                           limits=data['prizeLimits'], 
+                           given=data.get('prizesGiven', {}),
+                           winner_log=data.get('winnerLog', []),
+                           total_probability=total_probability,
+                           message=message)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')

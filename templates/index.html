@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch & Win!</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Welcome! Register to Play</h1>
+        
+        <form id="registration-form">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br>
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+            <br>
+            <button type="submit">Play Now!</button>
+        </form>
+
+        <div id="game-area" style="display: none;">
+            <h2>Scratch to Reveal Your Prize!</h2>
+            <p>Match three to win!</p>
+            <div class="scratch-grid" id="scratch-grid">
+                </div>
+            <div id="prize-display" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+</html>

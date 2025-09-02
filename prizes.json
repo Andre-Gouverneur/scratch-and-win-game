@@ -1,0 +1,29 @@
+{
+    "winProbability": {
+        "5_PERCENT_OFF": 0.05,
+        "10_PERCENT_OFF": 0.05,
+        "15_PERCENT_OFF": 0.05,
+        "20_PERCENT_OFF": 0.05,
+        "25_PERCENT_OFF": 0.05,
+        "30_PERCENT_OFF": 0.05,
+        "35_PERCENT_OFF": 0.05,
+        "40_PERCENT_OFF": 0.05,
+        "45_PERCENT_OFF": 0.05,
+        "50_PERCENT_OFF": 0.05,
+        "NO_PRIZE": 0.5
+    },
+    "prizeLimits": {
+        "5_PERCENT_OFF": 100,
+        "10_PERCENT_OFF": 50,
+        "15_PERCENT_OFF": 30,
+        "20_PERCENT_OFF": 20,
+        "25_PERCENT_OFF": 10,
+        "30_PERCENT_OFF": 5,
+        "35_PERCENT_OFF": 3,
+        "40_PERCENT_OFF": 2,
+        "45_PERCENT_OFF": 1,
+        "50_PERCENT_OFF": 1
+    },
+    "prizesGiven": {},
+    "winnerLog": []
+}
