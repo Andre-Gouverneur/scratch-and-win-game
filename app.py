@@ -162,11 +162,23 @@ def export_winners():
     csv_data = io.StringIO()
     csv_writer = csv.writer(csv_data)
     
+    # Write headers
     headers = ["Name", "Email", "Prize", "Timestamp"]
     csv_writer.writerow(headers)
     
+    # Reformat the timestamp for each winner entry before writing
     for winner in winners:
-        csv_writer.writerow([winner['name'], winner['email'], winner['prize'], winner['timestamp']])
+        try:
+            # Convert the ISO string back to a datetime object
+            timestamp_obj = datetime.fromisoformat(winner['timestamp'])
+            # Reformat it to a more readable string
+            formatted_timestamp = timestamp_obj.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            # If the timestamp is already formatted or invalid, use it as is
+            formatted_timestamp = winner['timestamp']
+
+        # Write data row with the formatted timestamp
+        csv_writer.writerow([winner['name'], winner['email'], winner['prize'], formatted_timestamp])
     
     output = io.BytesIO(csv_data.getvalue().encode('utf-8'))
     output.seek(0)

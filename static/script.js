@@ -127,7 +127,7 @@ function checkScratchCompletion(canvas, ctx) {
 function showFinalPrize(prize) {
     let prizeMessage = '';
     if (prize && prize !== "NO_PRIZE") {
-        prizeMessage = `<h3>Congratulations! You've won:</h3><img src="/static/images/${prize.toLowerCase()}.png" alt="${prize}" class="prize-image">`;
+        prizeMessage = `<h3>Congratulations! You've won:</h3><img src="/static/images/${prize}.png" alt="${prize}" class="prize-image">`;
     } else {
         prizeMessage = `<h3>No prize this time. Try again!</h3><img src="/static/images/no_prize.png" alt="No prize" class="prize-image">`;
     }
