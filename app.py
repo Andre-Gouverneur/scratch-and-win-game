@@ -101,6 +101,9 @@ def admin_login():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
+    if not session.get('logged_in'):
+        return redirect(url_for('home'))
+
     data = load_data()
     
     if request.method == 'POST':
@@ -110,14 +113,12 @@ def admin_panel():
             for key, value in request.form.items():
                 if key.startswith('prob_'):
                     prize_name = key.replace('prob_', '')
-                    # If the value is not an empty string, convert it to a float
                     if value:
                         new_probabilities[prize_name] = float(value)
                     else:
                         new_probabilities[prize_name] = 0.0
                 elif key.startswith('limit_'):
                     prize_name = key.replace('limit_', '')
-                    # If the value is not an empty string, convert it to an int
                     if value:
                         new_prize_limits[prize_name] = int(value)
                     else:
@@ -133,6 +134,17 @@ def admin_panel():
         message = None
         
     total_probability = sum(data['winProbability'].values())
+    
+    # Format the timestamps for the winner log
+    for winner in data.get('winnerLog', []):
+        try:
+            # Convert the ISO string back to a datetime object
+            timestamp_obj = datetime.fromisoformat(winner['timestamp'])
+            # Reformat it to a more readable string
+            winner['timestamp'] = timestamp_obj.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            # Handle cases where the timestamp might already be in a different format
+            pass
     
     return render_template('admin.html', 
                            prizes=data['winProbability'], 
