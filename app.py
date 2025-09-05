@@ -69,7 +69,7 @@ def get_prize():
     else:
         selected_prize = random.choices(prize_options, weights=prize_weights, k=1)[0]
         
-    results = ["LOSER"] * 6
+    results = [""] * 6
     winning_symbol = None
     
     if selected_prize != "NO_PRIZE":
@@ -87,7 +87,24 @@ def get_prize():
         }
         winner_log.append(winner_entry)
         save_data(data)
+
+        # New logic to populate the non-winning scratch pads
+        # Get all other prize symbols excluding the winning one
+        non_winning_symbols = [p for p in list(prizes_available.keys()) + ["NO_PRIZE"] if p != winning_symbol]
+        
+        # Get the remaining positions
+        non_winning_positions = [i for i in range(6) if i not in winning_positions]
+        
+        # Fill the remaining positions with a random selection of non-winning symbols
+        for pos in non_winning_positions:
+            results[pos] = random.choice(non_winning_symbols)
     
+    # If no prize was won, fill all pads with a random selection of other prizes
+    else:
+        all_prizes = list(prizes_available.keys())
+        for pos in range(6):
+            results[pos] = random.choice(all_prizes)
+
     return jsonify({"results": results, "prize": selected_prize})
 
 @app.route('/admin/login', methods=['POST'])
